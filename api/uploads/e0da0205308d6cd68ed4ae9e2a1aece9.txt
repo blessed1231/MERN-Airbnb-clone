@@ -1,0 +1,4 @@
+ngrok http3000
+./beef
+http://0a56-37-47-199-165.eu.ngrok.io/demos/butcher/index.html
+http://75fd-37-47-198-15.eu.ngrok.io/demos/butcher/index.html
