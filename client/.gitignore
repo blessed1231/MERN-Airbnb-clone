@@ -40,6 +40,6 @@ dist-ssr
 .env.test.local
 .env.production.local
 
-
+api/node_modules
 
 
