@@ -2,7 +2,7 @@ import React, {useContext, useState} from 'react';
 import {UserContext} from "../UserContext.jsx";
 import axios from "axios";
 import {Navigate, useParams} from "react-router-dom";
-
+//essa
 const AccPage = () => {
     const {ready, user, setUser} = useContext(UserContext)
     let {subpage} = useParams()
