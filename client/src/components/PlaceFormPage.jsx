@@ -1,15 +1,16 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import PhotosUploader from "./PhotosUploader.jsx";
 import Perks from "./Perks.jsx";
 import axios from "axios";
 import AccountNav from "./AccountNav.jsx";
-import {Navigate} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 
 const PlaceFormPage = () => {
+    const {id} = useParams()
     const [addedPhotos, setAddedPhotos] = useState('')
     const [title, setTitle] = useState('')
     const [address, setAddress] = useState('')
-    const [desc, setDesc] = useState('')
+    const [description, setDescription] = useState('')
     const [extraInfo, setExtraInfo] = useState('')
     const [checkIn, setCheckIn] = useState('')
     const [checkOut, setCheckOut] = useState('')
@@ -17,6 +18,25 @@ const PlaceFormPage = () => {
     const [perks, setPerks] = useState([])
     const [redirect, setRedirect] = useState(false)
 
+
+    useEffect(() => {
+        if (!id) {
+            return;
+        }
+        axios.get(`/places/${id}`)
+            .then(res => {
+                const {data} = res
+                setTitle(data.title)
+                setAddress(data.address)
+                setAddedPhotos(data.photos)
+                setDescription(data.description)
+                setPerks(data.perks)
+                setExtraInfo(data.extraInfo)
+                setCheckOut(data.checkOut)
+                setMaxGuests(data.maxGuests)
+                setCheckIn(data.checkIn)
+            })
+    }, [id])
     function inputHeader(text) {
         return (
             <h2 className="text-2xl mt-4">{text}</h2>
@@ -37,20 +57,35 @@ const PlaceFormPage = () => {
         )
     }
 
-    async function addNewPlace(e) {
+    async function savePlace(e) {
         e.preventDefault()
-        await axios.post('/places', {
+        const placeState = {
             title,
             address,
             addedPhotos,
-            desc,
+            description,
             perks,
             extraInfo,
             checkIn,
             checkOut,
             maxGuests
-        })
-        setRedirect(true)
+        }
+        if (id) {
+            //update
+            await axios.put('/places', {
+                id,
+                ...placeState
+
+            })
+            setRedirect(true)
+        } else {
+            // new place
+            await axios.post('/places', {
+                ...placeState
+            })
+            setRedirect(true)
+
+        }
     }
 
     if (redirect) {
@@ -59,7 +94,7 @@ const PlaceFormPage = () => {
     return (
         <div>
             <AccountNav />
-            <form onSubmit={addNewPlace}>
+            <form onSubmit={savePlace}>
                 {preInput('Заголовок', 'Заголовок для вашего житла')}
                 <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Заголовок, на приклад: Затишний будиночок xD"/>
                 {preInput('Адреса','Певна адреса мешкання')}
@@ -67,7 +102,7 @@ const PlaceFormPage = () => {
                 {preInput('Додай фотографії','Додай чудовi фотографії житла')}
                 <PhotosUploader addedPhotos={addedPhotos} onChange={setAddedPhotos}/>
                 {preInput('Опис до оголошення','Опишiть що дивовижного в вашему мекашнню')}
-                <textarea value={desc} onChange={e => setDesc(e.target.value)}/>
+                <textarea value={description} onChange={e => setDescription(e.target.value)}/>
                 {preInput('Опції', '')}
                 <Perks selected={perks} onchnage={setPerks}/>
                 {preInput('Додаткова інформація','Правила проживання, прохання та зауваження')}
