@@ -7,7 +7,7 @@ require('dotenv').config()
 const User = require('./models/User')
 const Place = require('./models/Place')
 const mongoose = require("mongoose");
-const {json} = require("express");
+const {json, request} = require("express");
 const hashedPasswd = bcrypt.genSaltSync(10)
 const  jwtSecret = 'u9dahfdji[sogsjdgj'
 const cookieParser = require('cookie-parser')
@@ -125,8 +125,8 @@ app.post('/places', (req, res) => {
             owner: userData.id,
             title,
             address,
-            addedPhotos,
-            description,
+           photos: addedPhotos,
+           description,
             extraInfo,
             perks,
             checkIn,
@@ -136,6 +136,54 @@ app.post('/places', (req, res) => {
         res.json(placeDocument)
     });
 
+})
+
+app.get('/places', (req, res) => {
+    const {token} = req.cookies
+    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+        res.json(await Place.find({owner: userData.id}))
+    })
+
+})
+
+app.get('/places/:id', async (req, res) => {
+    const {id} = req.params
+    res.json(await Place.findById(id))
+})
+
+app.put('/places', async (req,  res) => {
+    const {token} = req.cookies
+    const {
+        id,
+        title,
+        address,
+        addedPhotos,
+        description,
+        extraInfo,
+        perks,
+        checkIn,
+        checkOut,
+        maxGuests
+    } = req.body
+    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+        if (err) throw err
+        const placeDoc = await Place.findById(id)
+    if (userData.id === placeDoc.owner.toString()) {
+        placeDoc.set({
+            title,
+            address,
+            photos: addedPhotos,
+            description,
+            extraInfo,
+            perks,
+            checkIn,
+            checkOut,
+            maxGuests
+        })
+        await placeDoc.save();
+        res.json('ok')
+    }
+    })
 })
 
 app.listen(4000)
