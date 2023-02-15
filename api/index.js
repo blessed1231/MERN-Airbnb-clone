@@ -14,6 +14,7 @@ const cookieParser = require('cookie-parser')
 const imageDownloader = require('image-downloader')
 const multer = require('multer')
 const fs = require('fs')
+const Booking = require('./models/Booking')
 
 app.use(express.json())
 app.use(cookieParser())
@@ -24,6 +25,16 @@ app.use(cors({
 }))
 
 mongoose.connect(process.env.MONGO_URL)
+
+
+function getUserDataFromReq(req) {
+    return new Promise((resolve, reject) => {
+        jwt.verify(req.cookies.token, jwtSecret, {}, async (err, userData) => {
+            if (err) throw err;
+            resolve(userData)
+        })
+    })
+}
 
 
 app.get('/test', (req, res) => {
@@ -117,7 +128,8 @@ app.post('/places', (req, res) => {
         perks,
         checkIn,
         checkOut,
-        maxGuests
+        maxGuests,
+        price
     } = req.body
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
         if (err) throw err;
@@ -131,14 +143,15 @@ app.post('/places', (req, res) => {
             perks,
             checkIn,
             checkOut,
-            maxGuests
+            maxGuests,
+           price
         })
         res.json(placeDocument)
     });
 
 })
 
-app.get('/places', (req, res) => {
+app.get('/user-places', (req, res) => {
     const {token} = req.cookies
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
         res.json(await Place.find({owner: userData.id}))
@@ -163,7 +176,8 @@ app.put('/places', async (req,  res) => {
         perks,
         checkIn,
         checkOut,
-        maxGuests
+        maxGuests,
+        price
     } = req.body
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
         if (err) throw err
@@ -178,13 +192,52 @@ app.put('/places', async (req,  res) => {
             perks,
             checkIn,
             checkOut,
-            maxGuests
+            maxGuests,
+            price
         })
         await placeDoc.save();
         res.json('ok')
     }
     })
 })
+
+app.get('/places',async (req, res) => {
+    res.json(await Place.find())
+})
+
+
+app.post('/booking',async (req, res) => {
+    const userData = await getUserDataFromReq(req)
+    const {place,
+        checkIn,
+        checkOut,
+        numberOfGuests,
+        name,
+        mobile} = req.body
+    Booking.create({
+        place,
+        checkIn,
+        checkOut,
+        numberOfGuests,
+        name,
+        mobile,
+        user: userData.id
+    }).then((doc) => {
+        res.json(doc);
+    }).catch((err) => {
+        throw err
+    })
+})
+
+
+
+
+app.get('/bookings', async (req,res) => {
+    const userData = await getUserDataFromReq(req);
+    res.json( await Booking.find({user:userData.id}).populate('place') );
+});
+
+
 
 app.listen(4000)
 

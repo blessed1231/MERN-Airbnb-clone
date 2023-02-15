@@ -17,6 +17,7 @@ const PlaceFormPage = () => {
     const [maxGuests, setMaxGuests] = useState('1')
     const [perks, setPerks] = useState([])
     const [redirect, setRedirect] = useState(false)
+    const [price, setPrice] = useState('')
 
 
     useEffect(() => {
@@ -25,6 +26,7 @@ const PlaceFormPage = () => {
         }
         axios.get(`/places/${id}`)
             .then(res => {
+
                 const {data} = res
                 setTitle(data.title)
                 setAddress(data.address)
@@ -35,6 +37,8 @@ const PlaceFormPage = () => {
                 setCheckOut(data.checkOut)
                 setMaxGuests(data.maxGuests)
                 setCheckIn(data.checkIn)
+                setPrice(data.price)
+
             })
     }, [id])
     function inputHeader(text) {
@@ -60,6 +64,7 @@ const PlaceFormPage = () => {
     async function savePlace(e) {
         e.preventDefault()
         const placeState = {
+            price,
             title,
             address,
             addedPhotos,
@@ -99,16 +104,16 @@ const PlaceFormPage = () => {
                 <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Заголовок, на приклад: Затишний будиночок xD"/>
                 {preInput('Адреса','Певна адреса мешкання')}
                 <input type={"text"} value={address} onChange={e => setAddress(e.target.value)} placeholder={"Адреса"}/>
-                {preInput('Додай фотографії','Додай чудовi фотографії житла')}
+                {preInput('Додай фотографії','Додай чудовi фотографії житла. Зірка на фотографії означає, що фотографія буде першою в оголошенні    ')}
                 <PhotosUploader addedPhotos={addedPhotos} onChange={setAddedPhotos}/>
-                {preInput('Опис до оголошення','Опишiть що дивовижного в вашему мекашнню')}
+                {preInput('Опис до оголошення','Опишiть що дивовижного в вашему мекашнню.')}
                 <textarea value={description} onChange={e => setDescription(e.target.value)}/>
                 {preInput('Опції', '')}
                 <Perks selected={perks} onchnage={setPerks}/>
                 {preInput('Додаткова інформація','Правила проживання, прохання та зауваження')}
                 <textarea  value={extraInfo} onChange={e => setExtraInfo(e.target.value)}/>
                 {preInput('Чек-iн та Чек-аут, максимальна кiлькiсть замешканцiв','Додай час Чек-iну, пам`ятай про час коли треба прибрати мешкання<')}
-                <div className="grid gap-2 sm:grid-cols-3">
+                <div className="grid gap-2 grid-cols-2 md:grid-cols-4">
                     <div>
                         <h3 className="mt-2 -mb-1 ">Час чек-iну</h3>
                         <input type={"text"} placeholder="14:00" value={checkIn} onChange={e => setCheckIn(e.target.value)}/>
@@ -120,6 +125,10 @@ const PlaceFormPage = () => {
                     <div>
                         <h3 className="mt-2 -mb-1 ">Максимальна кiлькiсть гостей</h3>
                         <input type={"number"} value={maxGuests} onChange={e => setMaxGuests(e.target.value)}/>
+                    </div>
+                    <div>
+                        <h3 className="mt-2 -mb-1 ">Ціна за ніч</h3>
+                        <input type={"text"} placeholder="Ваша цена" value={price} onChange={e => setPrice(e.target.value)}/>
                     </div>
                 </div>
                 <button className="primary my-4">Зберiгти</button>

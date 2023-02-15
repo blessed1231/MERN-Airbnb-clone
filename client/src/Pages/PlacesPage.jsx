@@ -2,13 +2,14 @@ import React, {useEffect, useState} from 'react';
 import {Link, useParams} from "react-router-dom";
 import AccountNav from "../components/AccountNav.jsx";
 import axios from "axios";
+import PlaceImg from "../components/PlaceImg.jsx";
 
 
 const PlacesPage = () => {
     const [places, setPlaces] = useState([])
     const [redirectToPlacesList, setRedirectToPlacesList] = useState(false)
     useEffect(() => {
-        axios.get('/places').then(({data}) => {
+        axios.get('/user-places').then(({data}) => {
             setPlaces(data)
         })
     },[])
@@ -27,7 +28,7 @@ const PlacesPage = () => {
                 {places.length > 0 && places.map(place => (
                     <Link to={'/account/places/' + place._id} className="bg-gray-700 flex cursor-pointer gap-4 p-4 m-4  text-white rounded-2xl" key={place.title}>
                         <div className="w-44 h-auto bg-gray-300  flex shrink-0">
-                            {place.photos.length > 0 && (<img className="object-cover" src={'http://localhost:4000/uploads/' + place.photos[0]} alt={"photos"} />)}
+                                <PlaceImg  place={place}/>
                         </div>
                         <div className="grow-0 shrink">
                             <h2 className="text-xl">{place.title}</h2>
